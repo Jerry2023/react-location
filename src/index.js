@@ -38,7 +38,7 @@ function createCopyButton(getText) {
     buttonEl.style.border = 'none';
     buttonEl.style.background = '#722ed1';
     buttonEl.style.outline = 'none';
-    buttonEl.innerHTML = '在vscode打开';
+    buttonEl.innerHTML = 'open with vscode';
     buttonEl.style.borderRadius = '4px';
     buttonEl.style.color = '#fff';
     buttonEl.style.padding = '2px 10px';
@@ -72,7 +72,7 @@ function showTooltip(debugInfo, element) {
     if (srcIndex > -1) {
         projectPath = fileName.slice(srcIndex);
         lineNumber = debugInfo.lineNumber;
-        template = `<p style="margin-bottom: 10px">文件路径: ${projectPath} </p>`;
+        template = `<p style="margin-bottom: 10px">path: ${projectPath} </p>`;
     } else {
         let {fileName: projectPathFull, lineNumber: projectLineNumber} = getProjectPath(element)?.debugInfo || {};
         if (!projectPathFull) return;
@@ -84,8 +84,8 @@ function showTooltip(debugInfo, element) {
         targetLineNum = lineNumber;
         targetColumn = debugInfo.columnNumber;
 
-        template = `<p style="margin-bottom: 10px">业务文件路径: ${projectPath} </p>
-                        <p style="margin-bottom: 10px">当前文件路径: ${nodeModulePath} </p>
+        template = `<p style="margin-bottom: 10px">path: ${projectPath} </p>
+                        <p style="margin-bottom: 10px">currentPath: ${nodeModulePath} </p>
                         `;
     }
     const result = getComponentPath(element);
@@ -187,7 +187,7 @@ function getComponentPath(el) {
     return result;
 }
 
-const getOpenText = (isOpen) => isOpen ? '关闭代码提示' : '打开代码提示';
+const getOpenText = (isOpen) => isOpen ? 'Turn off code path' : 'Open code path';
 
 function createCloseBtn() {
     const buttonEl = document.createElement('button');
