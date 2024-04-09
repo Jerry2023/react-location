@@ -1,7 +1,7 @@
 # react-location
-快速帮助开发者定位页面任何元素的源码位置以及文件依赖关系
+Quickly helps developers locate the source code position of any element on a page and its file dependencies.
 
-使用
+Usage
 ```shell
 npm install react-location 
 ```
