@@ -1,13 +1,15 @@
 {
-  "name": "react-location",
-  "version": "1.0.0",
+  "name": "react-location-code",
+  "version": "1.0.2",
   "description": "The tool for locating React source code",
   "source": "src/index.js",
   "type": "module",
   "module": "dist/module.js",
-  "browser": "dist/browser.js",
-  "author": "",
+  "author": "jerry2023",
   "license": "ISC",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "watch": "parcel watch",
     "build": "parcel build --no-source-maps"
