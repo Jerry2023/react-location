@@ -1,0 +1,18 @@
+{
+  "name": "react-location",
+  "version": "1.0.0",
+  "description": "The tool for locating React source code",
+  "source": "src/index.js",
+  "type": "module",
+  "module": "dist/module.js",
+  "browser": "dist/browser.js",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "watch": "parcel watch",
+    "build": "parcel build --no-source-maps"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8"
+  }
+}
