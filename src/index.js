@@ -1,129 +1,103 @@
 import { createPopper } from '@popperjs/core';
+import { findReactFiberProperty, getComponentPath, getRelationPath } from "./utils.js";
 
-const tooltipDiv = document.createElement('div');
-tooltipDiv.style.position = 'absolute';
-tooltipDiv.style.background = 'rgba(255, 255, 255, 0.9)';
-tooltipDiv.style.padding = '5px';
-tooltipDiv.style.border = '1px solid #ccc';
-tooltipDiv.style.borderRadius = '5px';
-tooltipDiv.style.zIndex = '9999';
-tooltipDiv.style.display = 'none';
+const OPEN_KEY = '__isOpenInspect__';
 
-const OPEN_KEY = '__isOpen';
-
-function parsePath(path) {
-    if (!path) return;
-    const srcIndex = path.indexOf('src');
-    const nodeModuleInex = path.indexOf('node_modules');
-    if (srcIndex > -1) {
-        const projectPath = path.slice(srcIndex);
-        return projectPath;
-    } else {
-        const nodeModulePath = path.slice(nodeModuleInex);
-        return nodeModulePath;
-    }
-}
 
 function createToolTip() {
-    const tooltip = document.createElement('div');
-    tooltip.className = 'component-tooltip';
-    document.body.appendChild(tooltip);
-    return tooltip;
+    const tooltipEle = document.createElement('div');
+    tooltipEle.setAttribute('class', 'component-tooltip');
+    document.body.appendChild(tooltipEle);
+    return tooltipEle;
 }
 
 const tooltip = createToolTip();
 
-function createCopyButton(getText) {
+function createOpenButton(text) {
+    const buttonStyles = {
+        border: 'none',
+        display: 'block',
+        background: '#096dd9',
+        outline: 'none',
+        borderRadius: '4px',
+        color: '#fff',
+        padding: '2px 10px',
+        marginTop: '10px'
+    };
+
     const buttonEl = document.createElement('button');
-    buttonEl.style.border = 'none';
-    buttonEl.style.background = '#722ed1';
-    buttonEl.style.outline = 'none';
-    buttonEl.innerHTML = 'open with vscode';
-    buttonEl.style.borderRadius = '4px';
-    buttonEl.style.color = '#fff';
-    buttonEl.style.padding = '2px 10px';
-    buttonEl.style.marginTop = '10px';
-    buttonEl.addEventListener('click', () => {
-        const {target, targetLineNum, targetColumn} = getText();
-        window.open(`vscode://file/${target}:${targetLineNum}:${targetColumn}`);
-    });
+    Object.assign(buttonEl.style, buttonStyles);
+    buttonEl.textContent = text;
     return buttonEl;
+}
+
+function generateComponentTemplate(components) {
+    const componentItems = components.map((component, index) => `
+        <div style="margin-top: 10px">
+            <span style="border-radius:50%; text-align: center; display: inline-block; background: #5b8c00; height: 20px; width: 20px; line-height: 20px">${index + 1}</span>
+            ${component}
+        </div>`
+    ).join('');
+
+    return `
+        <div style="position: relative">
+            <div style="position: absolute; top: 0; left: 10px; width: 0; border-left: 1px solid #d9d9d9; z-index: -1; bottom: 0"></div>
+            ${componentItems}
+        </div>`;
 }
 
 
 function showTooltip(debugInfo, element) {
-    console.log('debugInfo', debugInfo);
-    if (!debugInfo) return;
-    if (window.localStorage.getItem(OPEN_KEY) !== 'true') return;
-    const {fileName} = debugInfo;
-    let projectPath;
-    let nodeModulePath;
-    let lineNumber;
+    if (!debugInfo || window.localStorage.getItem(OPEN_KEY) !== 'true') return;
 
+    const { fileName, lineNumber } = debugInfo;
+    const projectPath = getRelationPath(fileName, 'src');
+    const nodeModulePath = getRelationPath(fileName, 'node_modules');
 
-    let template = '';
     let target = fileName;
-    let targetLineNum = debugInfo.lineNumber;
-    let targetColumn = debugInfo.columnNumber;
+    let targetLineNum = lineNumber;
+    let template = '';
 
-    const srcIndex = fileName.indexOf('src');
-    const nodeModuleInex = fileName.indexOf('node_modules');
-
-    if (srcIndex > -1) {
-        projectPath = fileName.slice(srcIndex);
-        lineNumber = debugInfo.lineNumber;
-        template = `<p style="margin-bottom: 10px">path: ${projectPath} </p>`;
-    } else {
-        let {fileName: projectPathFull, lineNumber: projectLineNumber} = getProjectPath(element)?.debugInfo || {};
-        if (!projectPathFull) return;
-        target = projectPathFull;
-        const srcIndex = projectPathFull.indexOf('src');
-        projectPath = projectPathFull.slice(srcIndex);
-        nodeModulePath = fileName.slice(nodeModuleInex);
-        lineNumber = debugInfo.lineNumber;
-        targetLineNum = lineNumber;
-        targetColumn = debugInfo.columnNumber;
-
-        template = `<p style="margin-bottom: 10px">path: ${projectPath} </p>
-                        <p style="margin-bottom: 10px">currentPath: ${nodeModulePath} </p>
-                        `;
-    }
-    const result = getComponentPath(element);
-    template += `<div style="position: relative">
-                       <div style="position: absolute; top: 0; left: 10px; width: 0; border-left: 1px solid #d9d9d9; z-index: -1; bottom: 0"></div>`
-    for (let i = 0; i < result.length; i++) {
-        const c = result[i];
+    if (projectPath) {
         template += `
-             <div style="margin-top: 10px">
-                 <span style="border-radius:50%; text-align: center; display: inline-block; background: #5b8c00; height: 20px; width: 20px; line-height: 20px">${i + 1}</span>
-                 ${c}
-             </div>
-            `
+                <p style="margin-bottom: 10px">
+                    <span style="font-weight: bolder">path</span>: ${projectPath}
+                </p>`;
     }
-    template += '</div>'
 
+    if (nodeModulePath) {
+        template += `<p style="margin-bottom: 10px"><span style="font-weight: bolder">currentPath</span>: ${nodeModulePath}</p>`;
+    }
+
+    const components = getComponentPath(element);
+    template += generateComponentTemplate(components);
 
     tooltip.innerHTML = template;
 
-    const btn = createCopyButton(() => ({
-        target,
-        targetLineNum,
-        targetColumn,
-    }));
 
-    tooltip.appendChild(btn);
-
-    createPopper(element, tooltip, {
-        placement: 'bottom',
+    const openWithVscodeBtn = createOpenButton('Open witch vscode');
+    openWithVscodeBtn.addEventListener('click', () => {
+      window.open(`vscode://file/${target}:${targetLineNum}`);
     });
+
+    const openWithWebstorm= createOpenButton('Open witch Webstorm');
+    openWithWebstorm.addEventListener('click', () => {
+        window.open(`webstorm://open?file=${target}&line=${targetLineNum}`);
+    });
+
+
+    tooltip.appendChild(openWithVscodeBtn);
+    tooltip.appendChild(openWithWebstorm);
+
+    createPopper(element, tooltip, { placement: 'bottom' });
     tooltip.style.zIndex = '100000';
     tooltip.style.background = 'rgba(0, 0, 0, 0.9)';
     tooltip.style.borderRadius = '4px';
     tooltip.style.color = '#fff';
     tooltip.style.padding = '8px 4px';
+
     return tooltip;
 }
-
 function handleHover(event) {
     const targetElement = event.target;
 
@@ -133,59 +107,6 @@ function handleHover(event) {
     }
 }
 
-
-function hideTooltip(element) {
-    const tooltip = document.querySelector('.component-tooltip');
-    if (tooltip) {
-        tooltip.remove();
-    }
-}
-
-// document.addEventListener('mouseout', hideTooltip);
-
-function findReactFiberProperty(element) {
-    const propRegex = '__reactFiber';
-
-    for (const prop in element) {
-        if (prop.indexOf(propRegex) > -1) {
-            return element[prop];
-        }
-    }
-
-    return null;
-}
-
-function getDebugInfo(el) {
-    const fiber = findReactFiberProperty(el);
-    return fiber?._debugSource;
-}
-
-function getProjectPath(el) {
-    let currentEl = el;
-    let debugInfo = getDebugInfo(currentEl);
-    if (!debugInfo) return {debugInfo: {}, el};
-    while (debugInfo?.fileName.indexOf('node_modules') > -1) {
-        currentEl = currentEl.parentNode;
-        debugInfo = getDebugInfo(currentEl);
-    }
-    return {debugInfo, el: currentEl};
-}
-
-function getComponentPath(el) {
-    let count = 10;
-    const result = [];
-    let {el: currentEl} = getProjectPath(el);
-    for (let step = 0; step <= count; step++) {
-        const {fileName} = getProjectPath(currentEl)?.debugInfo || {};
-        const parsedFileName = parsePath(fileName);
-        if (fileName && !result.includes(parsedFileName)) {
-            result.push(parsedFileName);
-        }
-        if (!currentEl) break;
-        currentEl = currentEl.parentNode;
-    }
-    return result;
-}
 
 const getOpenText = (isOpen) => isOpen ? 'Turn off code path' : 'Open code path';
 
@@ -202,7 +123,7 @@ function createCloseBtn() {
     buttonEl.style.padding = '2px 10px';
     buttonEl.style.marginTop = '10px';
     const isOpen = window.localStorage.getItem(OPEN_KEY);
-    buttonEl.innerHTML = getOpenText(isOpen == 'true');
+    buttonEl.innerHTML = getOpenText(isOpen === 'true');
     buttonEl.addEventListener('click', () => {
         let currentStatus = window.localStorage.getItem(OPEN_KEY);
         if (currentStatus === 'true') {

@@ -1,6 +1,6 @@
 {
   "name": "react-location-code",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "The tool for locating React source code",
   "source": "src/index.js",
   "type": "module",
@@ -9,6 +9,11 @@
   "license": "ISC",
   "files": [
     "dist"
+  ],
+  "keywords": [
+    "react",
+    "source code",
+    "location"
   ],
   "scripts": {
     "watch": "parcel watch",
