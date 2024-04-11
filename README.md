@@ -13,4 +13,4 @@ import initLocation from 'react-location-code';
 initLocation();
 ```
 
-![img.png](https://github.com/Jerry2023/react-location/blob/b728b2dc0e13481957ae0db6cf0ab77bc43c0888/assets/img.png?raw=true)
+![2621712842768_.pic.jpg](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/89a7ce4fd0204c59857224a4c470ed3a~tplv-k3u1fbpfcp-jj-mark:3024:0:0:0:q75.awebp#?w=1220&h=816&s=72476&e=png&b=f3f3f3)
