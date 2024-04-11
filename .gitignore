@@ -1,3 +1,4 @@
 .parcel-cache
 dist
+dist/index.js
 node_modules
