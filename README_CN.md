@@ -10,4 +10,4 @@ import initLocation from 'react-location-code';
 initLocation();
 ```
 
-![img.png](https://github.com/Jerry2023/react-location/blob/b728b2dc0e13481957ae0db6cf0ab77bc43c0888/assets/img.png?raw=true)
+![img.png](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/be32d6ca945345078e4e7189c9f7e5cc~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=1220&h=816&s=72476&e=png&b=f3f3f3)
