@@ -1,4 +1,6 @@
 # react-location-code
+English | [简体中文](./README_CN.md)
+
 Quickly helps developers locate the source code position of any element on a page and its file dependencies.
 
 Usage
