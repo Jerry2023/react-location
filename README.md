@@ -19,7 +19,7 @@ initLocation()
 ![2621712842768_.pic.jpg](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/89a7ce4fd0204c59857224a4c470ed3a~tplv-k3u1fbpfcp-jj-mark:3024:0:0:0:q75.awebp#?w=1220&h=816&s=72476&e=png&b=f3f3f3)
 
 
-## TDDO 
+## todo
 
 1. TS refactoring
 2. Build process
