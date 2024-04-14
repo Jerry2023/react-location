@@ -1,7 +1,7 @@
 import { createPopper } from '@popperjs/core';
 import { findReactFiberProperty, getComponentPath, getRelationPath } from "./utils.js";
+import { OPEN_KEY, defaultOpt } from './types.js';
 
-const OPEN_KEY = '__isOpenInspect__';
 function createOpenButton(text) {
     const buttonStyles = {
         border: 'none',
@@ -36,12 +36,12 @@ function generateComponentTemplate(components) {
 }
 
 
-function showTooltip(debugInfo, element, tooltip) {
+function showTooltip(opt, debugInfo, element, tooltip) {
     if (!debugInfo || window.localStorage.getItem(OPEN_KEY) !== 'true') return;
 
     const { fileName, lineNumber } = debugInfo;
-    const projectPath = getRelationPath(fileName, 'src');
-    const nodeModulePath = getRelationPath(fileName, 'node_modules');
+    const projectPath = getRelationPath(fileName, opt.rootDirKey);
+    const nodeModulePath = getRelationPath(fileName, opt.ignoreDirKey);
 
     let target = fileName;
     let targetLineNum = lineNumber;
@@ -58,7 +58,7 @@ function showTooltip(debugInfo, element, tooltip) {
         template += `<p style="margin-bottom: 10px"><span style="font-weight: bolder">currentPath</span>: ${nodeModulePath}</p>`;
     }
 
-    const components = getComponentPath(element);
+    const components = getComponentPath(opt, element);
     template += generateComponentTemplate(components);
 
     tooltip.innerHTML = template;
@@ -120,9 +120,11 @@ function createCloseBtn(tooltip) {
     });
     return buttonEl;
 }
-
-export default function init() {
-
+/**
+ * @param {Partial<import('./types.js')['defaultOpt']>} option 
+ */
+export default function init(option) {
+    const opt = { ...option, ...defaultOpt };
     function createToolTip() {
         const tooltipEle = document.createElement('div');
         tooltipEle.setAttribute('class', 'component-tooltip');
@@ -135,7 +137,7 @@ export default function init() {
         const targetElement = event.target;
         const reactFiberProperty = findReactFiberProperty(targetElement);
         if (reactFiberProperty) {
-            showTooltip(reactFiberProperty._debugSource, targetElement, tooltip);
+            showTooltip(opt, reactFiberProperty._debugSource, targetElement, tooltip);
         }
     }
     document.addEventListener('mouseover', handleHover);

@@ -1,4 +1,6 @@
 .parcel-cache
-dist
-dist/index.js
 node_modules
+/dist
+/umd
+/cjs
+/esm

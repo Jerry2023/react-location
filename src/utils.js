@@ -1,7 +1,7 @@
-export function parsePath(path) {
+export function parsePath(opt, path) {
     if (!path) return;
 
-    const keywords = ['src', 'node_modules'];
+    const keywords = [opt.rootDirKey, opt.ignoreDirKey];
     const foundKeyword = keywords.find(keyword => path.includes(keyword));
 
     return foundKeyword ? path.slice(path.indexOf(foundKeyword)) : path;
@@ -35,11 +35,11 @@ function getDebugInfo(el) {
     return fiber?._debugSource;
 }
 
-function getProjectPath(el) {
+function getProjectPath(opt, el) {
     let currentEl = el;
     let debugInfo = getDebugInfo(currentEl);
     if (!debugInfo) return {debugInfo: {}, el};
-    while (pathType(debugInfo?.fileName, 'node_modules') > -1) {
+    while (pathType(debugInfo?.fileName, opt.ignoreDirKey) > -1) {
         currentEl = currentEl.parentNode;
         debugInfo = getDebugInfo(currentEl);
     }
@@ -47,13 +47,13 @@ function getProjectPath(el) {
 }
 
 
-export function getComponentPath(el) {
+export function getComponentPath(opt, el) {
     let count = 10;
     const result = [];
-    let {el: currentEl} = getProjectPath(el);
+    let {el: currentEl} = getProjectPath(opt, el);
     for (let step = 0; step <= count; step++) {
-        const {fileName} = getProjectPath(currentEl)?.debugInfo || {};
-        const parsedFileName = parsePath(fileName);
+        const {fileName} = getProjectPath(opt, currentEl)?.debugInfo || {};
+        const parsedFileName = parsePath(opt, fileName);
         if (fileName && !result.includes(parsedFileName)) {
             result.push(parsedFileName);
         }
