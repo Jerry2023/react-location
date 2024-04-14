@@ -1,6 +1,6 @@
 import { createPopper } from '@popperjs/core';
 import { findReactFiberProperty, getComponentPath, getRelationPath } from "./utils.js";
-import { OPEN_KEY, defaultOpt } from './types.js';
+import { OPEN_KEY, defaultOpt } from './option.js';
 
 function createOpenButton(text) {
     const buttonStyles = {
@@ -41,7 +41,7 @@ function showTooltip(opt, debugInfo, element, tooltip) {
 
     const { fileName, lineNumber } = debugInfo;
     const projectPath = getRelationPath(fileName, opt.rootDirKey);
-    const nodeModulePath = getRelationPath(fileName, opt.ignoreDirKey);
+    const nodeModulePath = getRelationPath(fileName, 'node_modules');
 
     let target = fileName;
     let targetLineNum = lineNumber;
@@ -121,7 +121,7 @@ function createCloseBtn(tooltip) {
     return buttonEl;
 }
 /**
- * @param {Partial<import('./types.js')['defaultOpt']>} option 
+ * @param {Partial<import('./option.js')['defaultOpt']>} option
  */
 export default function init(option) {
     const opt = { ...option, ...defaultOpt };

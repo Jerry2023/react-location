@@ -16,16 +16,8 @@
   "homepage": "https://github.com/Jerry2023/react-location/blob/master/README.md",
   "files": [
     "dist",
-    "esm",
-    "cjs",
-    "umd",
     "typings"
   ],
-  "targets": {
-    "module": {
-      "sourceMap": false
-    }
-  },
   "keywords": [
     "react",
     "source code",
