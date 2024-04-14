@@ -1,17 +1,16 @@
-import { createPopper } from '@popperjs/core';
+import { createPopperLite as createPopper } from '@popperjs/core';
 import { findReactFiberProperty, getComponentPath, getRelationPath } from "./utils.js";
 import { OPEN_KEY, defaultOpt } from './option.js';
-
-function createOpenButton(text) {
+function createOpenButton(text, style = {}) {
     const buttonStyles = {
         border: 'none',
-        display: 'block',
         background: '#096dd9',
         outline: 'none',
         borderRadius: '4px',
         color: '#fff',
-        padding: '2px 10px',
-        marginTop: '10px'
+        padding: '5px 10px',
+        marginTop: '10px',
+        ...style,
     };
 
     const buttonEl = document.createElement('button');
@@ -22,24 +21,35 @@ function createOpenButton(text) {
 
 function generateComponentTemplate(components) {
     const componentItems = components.map((component, index) => `
-        <div style="margin-top: 10px">
-            <span style="border-radius:50%; text-align: center; display: inline-block; background: #5b8c00; height: 20px; width: 20px; line-height: 20px">${index + 1}</span>
-            ${component}
+        <div style="margin-top: 10px; display: flex">
+            <div style="display: flex; align-items: center; justify-content: center;height: 20px; width: 20px; background: #1677ff; border-radius: 50%">
+                <span 
+                    style="border-radius:50%; text-align: center; display: inline-block; background: #fff; height: 8px; width: 8px;">
+                </span> 
+            </div>
+            <p style="margin-left: 10px">${component}</p>
         </div>`
     ).join('');
 
     return `
         <div style="position: relative">
-            <div style="position: absolute; top: 0; left: 10px; width: 0; border-left: 1px solid #d9d9d9; z-index: -1; bottom: 0"></div>
+            <div style="position: absolute; top: 0; left: 10px; width: 8px; border-left: 1px solid #d9d9d9; z-index: -1; bottom: 0"></div>
             ${componentItems}
         </div>`;
 }
 
 
 function showTooltip(opt, debugInfo, element, tooltip) {
-    if (!debugInfo || window.localStorage.getItem(OPEN_KEY) !== 'true') return;
+    const hide = () => {
+        tooltip.style.display = 'none';
+    }
+    const show = () => {
+        tooltip.style.display = 'block';
+    }
+    if (!debugInfo || window.localStorage.getItem(OPEN_KEY) !== 'true') return hide();
 
-    const { fileName, lineNumber } = debugInfo;
+    show();
+    const {fileName, lineNumber} = debugInfo;
     const projectPath = getRelationPath(fileName, opt.rootDirKey);
     const nodeModulePath = getRelationPath(fileName, 'node_modules');
 
@@ -50,7 +60,7 @@ function showTooltip(opt, debugInfo, element, tooltip) {
     if (projectPath) {
         template += `
                 <p style="margin-bottom: 10px">
-                    <span style="font-weight: bolder">path</span>: ${projectPath}
+                    <span style="font-weight: bolder">path: ${projectPath}</span>
                 </p>`;
     }
 
@@ -64,12 +74,15 @@ function showTooltip(opt, debugInfo, element, tooltip) {
     tooltip.innerHTML = template;
 
 
-    const openWithVscodeBtn = createOpenButton('Open witch vscode');
+    const openWithVscodeBtn = createOpenButton('Open with vscode');
     openWithVscodeBtn.addEventListener('click', () => {
-      window.open(`vscode://file/${target}:${targetLineNum}`);
+        window.open(`vscode://file/${target}:${targetLineNum}`);
     });
 
-    const openWithWebstorm= createOpenButton('Open witch Webstorm');
+    const openWithWebstorm = createOpenButton('Open with Webstorm', {
+        marginLeft: '10px',
+        display: 'inline-block',
+    });
     openWithWebstorm.addEventListener('click', () => {
         window.open(`webstorm://open?file=${target}&line=${targetLineNum}`);
     });
@@ -78,7 +91,7 @@ function showTooltip(opt, debugInfo, element, tooltip) {
     tooltip.appendChild(openWithVscodeBtn);
     tooltip.appendChild(openWithWebstorm);
 
-    createPopper(element, tooltip, { placement: 'bottom' });
+    createPopper(element, tooltip, {placement: 'bottom'});
     tooltip.style.zIndex = '100000';
     tooltip.style.background = 'rgba(0, 0, 0, 0.9)';
     tooltip.style.borderRadius = '4px';
@@ -89,8 +102,7 @@ function showTooltip(opt, debugInfo, element, tooltip) {
 }
 
 
-
-const getOpenText = (isOpen) => isOpen ? 'Turn off code path' : 'Open code path';
+const getOpenText = (isOpen) => isOpen ? 'turn off code path' : 'open code path';
 
 function createCloseBtn(tooltip) {
     const buttonEl = document.createElement('button');
@@ -98,12 +110,13 @@ function createCloseBtn(tooltip) {
     buttonEl.style.bottom = '250px';
     buttonEl.style.right = '10px';
     buttonEl.style.border = 'none';
-    buttonEl.style.background = 'rgba(69,157,245,.6)';
+    buttonEl.style.background = 'rgba(0,0,0, .8)';
     buttonEl.style.outline = 'none';
     buttonEl.style.borderRadius = '4px';
     buttonEl.style.color = '#fff';
     buttonEl.style.padding = '2px 10px';
     buttonEl.style.marginTop = '10px';
+    buttonEl.style.fontSize = '16px';
     const isOpen = window.localStorage.getItem(OPEN_KEY);
     buttonEl.innerHTML = getOpenText(isOpen === 'true');
     buttonEl.addEventListener('click', () => {
@@ -120,11 +133,13 @@ function createCloseBtn(tooltip) {
     });
     return buttonEl;
 }
+
 /**
  * @param {Partial<import('./option.js')['defaultOpt']>} option
  */
 export default function init(option) {
-    const opt = { ...option, ...defaultOpt };
+    const opt = {...option, ...defaultOpt};
+
     function createToolTip() {
         const tooltipEle = document.createElement('div');
         tooltipEle.setAttribute('class', 'component-tooltip');
@@ -133,6 +148,8 @@ export default function init(option) {
     }
 
     const tooltip = createToolTip();
+
+
     function handleHover(event) {
         const targetElement = event.target;
         const reactFiberProperty = findReactFiberProperty(targetElement);
@@ -140,6 +157,7 @@ export default function init(option) {
             showTooltip(opt, reactFiberProperty._debugSource, targetElement, tooltip);
         }
     }
+
     document.addEventListener('mouseover', handleHover);
     window.localStorage.setItem(OPEN_KEY, 'true');
     document.body.appendChild(createCloseBtn(tooltip));
